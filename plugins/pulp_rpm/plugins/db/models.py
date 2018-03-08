@@ -1216,14 +1216,20 @@ class Errata(UnitMixin, ContentUnit):
         :param other: potentially a newer version of the erratum
         :type  other: pulp_rpm.plugins.db.models.Errata
 
-        :return: True if the other erratum is newer than the existing one
+        :return: True if the other erratum is newer than the existing one, or if other erratum has a
+                 newer version than existing one
         :rtype:  bool
 
         :raises ValueError: If either self or other `updated` fields is not an parseable datetime
                             format.
         """
         if other.updated == "":
-            return other.version > self.version
+            # If version does not exist on erratum, don't update it
+            if not other.version or not self.version:
+                return False
+            else:
+                return other.version > self.version
+
         if self.updated == "":
             self_updated_field = '1970-01-01'
         else:
@@ -1235,7 +1241,8 @@ class Errata(UnitMixin, ContentUnit):
                                                              msg=existing_err_msg)
         new_updated_dt = util.errata_format_to_datetime(other.updated, msg=other_err_msg)
 
-        if new_updated_dt == existing_updated_dt:
+        # if updated time are equivalent and version exists on both erratum, then check version
+        if new_updated_dt == existing_updated_dt and other.version and self.version:
             return other.version > self.version
 
         return new_updated_dt > existing_updated_dt

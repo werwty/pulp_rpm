@@ -43,8 +43,6 @@ def process_package_element(element):
         # any collection has an element present with tag 'reboot_suggested'.
         # Note that yum, as of 3.4.3, does not check the contents of that element.
         'reboot_suggested': False,
-        # relogin_suggested and restart_suggested are suse fields, we can treat them the same
-        # way we treat reboot_suggested
         'relogin_suggested': False,
         'restart_suggested': False,
         'references': map(_parse_reference, element.find('references') or []),
@@ -66,15 +64,16 @@ def process_package_element(element):
         for package in collection['packages']:
             if package.get('reboot_suggested') is not None:
                 package_info['reboot_suggested'] = True
-            if package.get('relogin_suggested') is not None:
-                package_info['relogin_suggested'] = True
-            if package.get('restart_suggested') is not None:
-                package_info['restart_suggested'] = True
 
     for attr_name in ('rights', 'severity', 'summary', 'solution', 'release', 'pushcount'):
         child = element.find(attr_name)
         if child is not None:
             package_info[attr_name] = child.text
+
+    for bool_attr in ('relogin_suggested', 'restart_suggested'):
+        child = element.find(bool_attr)
+        if child is not None:
+            package_info[bool_attr] = child.text.lower() in ['true', '1']
 
     issued_element = element.find('issued')
     if issued_element is not None:

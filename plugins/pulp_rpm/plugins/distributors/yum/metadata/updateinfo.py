@@ -122,12 +122,6 @@ class UpdateinfoXMLFileContext(FastForwardXmlFileContext):
         if erratum_unit.reboot_suggested:
             self.xml_generator.completeElement('reboot_suggested', {}, 'True')
 
-        if erratum_unit.relogin_suggested:
-            self.xml_generator.completeElement('relogin_suggested', {}, 'True')
-
-        if erratum_unit.restart_suggested:
-            self.xml_generator.completeElement('restart_suggested', {}, 'True')
-
         for element in self.optional_errata_fields:
             element_value = getattr(erratum_unit, element)
             if not element_value:
